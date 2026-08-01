@@ -91,43 +91,42 @@ button, input, textarea {
     padding: 0 10px;
 }
 .undangan {
-    min-height: 100vh; /* full layar */
+    min-height: 100vh;
+    padding: clamp(24px, 5vw, 48px) 20px;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* tengah vertikal */
-    align-items: center; /* tengah horizontal */
+    justify-content: center;
+    align-items: center;
     text-align: center;
     background: linear-gradient(rgba(0,0,0,0.0), rgba(0,0,0,0.0)),
     url('img/Latar hf.jpg') center/cover no-repeat;
 }
 .save-the-date {
-    font-size: 5rem;
-    margin-bottom: 3rem;
-    margin-top: -5rem; /* hilangkan jarak atas */
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    margin: 0 0 16px;
     color: var(--hijau);
     font-family: "Lobster", cursive;
 }
 .undangan img {
-    width: 70ch;
+    width: min(320px, 76vw);
     height: auto;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 0;
-    margin-bottom: 0rem;
+    margin: 8px auto 12px;
 }
 .undangan h1 {
     font-family: "Lobster", cursive;
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    margin: 0 0 12px;
     color: var(--hijau);
-    margin-top: -3rem; /* hilangkan jarak atas */
 }
 .undangan h4 {
     font-size: 3rem;
     margin-bottom: 2rem;
 }
 .undangan p {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+    font-size: clamp(1rem, 2.2vw, 1.3rem);
+    margin-bottom: 12px;
 }
 .undangan a{
     color: var(--hijau);
@@ -139,7 +138,7 @@ button, input, textarea {
     box-shadow: var(--shadow);
 }
 .pengantin {
-    width: 220px;
+    width: min(240px, 72vw);
     margin: 0 auto 10px;
     display: block;
     transform-origin: center bottom;
