@@ -481,6 +481,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const COMMENTS_COLLECTION = "doa";
 
 let pilihanKehadiran = "hadir";
 let authReady = false;
@@ -609,8 +610,10 @@ async function ensureAuth() {
         await signInAnonymously(auth);
         authReady = true;
     } catch (error) {
-        console.error("Gagal login anonim Firebase:", error);
-        throw error;
+        // Rules koleksi doa mengizinkan komentar publik; halaman tetap dapat
+        // tersambung bila Anonymous Authentication belum diaktifkan.
+        console.warn("Login anonim Firebase tidak tersedia, melanjutkan tanpa login:", error);
+        authReady = true;
     }
 }
 
@@ -678,7 +681,12 @@ window.kirimUcapan = async function () {
             like: 0
         };
 
-        const docRef = await addDoc(collection(db, "ucapan"), dataUcapan);
+        if (localStorage.getItem("sudahKirimUcapan")) {
+           alert("Anda hanya dapat mengirim satu ucapan.");
+           return;
+        }
+
+        const docRef = await addDoc(collection(db, COMMENTS_COLLECTION), dataUcapan);
         const itemLokal = {
             id: docRef.id,
             nama: nama,
@@ -687,11 +695,15 @@ window.kirimUcapan = async function () {
             waktu: new Date(),
             like: 0
         };
+        localStorage.setItem("sudahKirimUcapan", "true");
 
         tambahUcapanLokal(itemLokal);
         document.getElementById("nama").value = "";
         document.getElementById("pesan").value = "";
-        setCommentStatus("Ucapan berhasil dikirim. Menunggu sinkronisasi real-time...");
+        setCommentStatus("✅ Terima kasih, ucapan Anda berhasil dikirim.");
+        setTimeout(() => {
+            setCommentStatus("");
+        }, 2000);
     } catch (error) {
         console.error("Gagal mengirim ucapan:", error);
 
@@ -736,7 +748,7 @@ window.likeUcapan = async function (id, currentLike = 0) {
     updateItemLike(id);
 
     try {
-        const ref = doc(db, "ucapan", id);
+        const ref = doc(db, COMMENTS_COLLECTION, id);
         await updateDoc(ref, {
             like: increment(1)
         });
@@ -750,7 +762,7 @@ window.hapusUcapan = async function (id) {
 
     if (confirm("Hapus ucapan ini?")) {
         try {
-            await deleteDoc(doc(db, "ucapan", id));
+            await deleteDoc(doc(db, COMMENTS_COLLECTION, id));
         } catch (error) {
             console.error("Gagal menghapus ucapan:", error);
         }
@@ -783,7 +795,7 @@ window.logoutAdmin = function () {
 async function startRealtimeComments() {
     try {
         await ensureAuth();
-        const commentsQuery = query(collection(db, "ucapan"), orderBy("waktu", "desc"));
+        const commentsQuery = query(collection(db, COMMENTS_COLLECTION), orderBy("waktu", "desc"));
 
         onSnapshot(commentsQuery, (snapshot) => {
             remoteItems = snapshot.docs.map((docSnap) => ({
