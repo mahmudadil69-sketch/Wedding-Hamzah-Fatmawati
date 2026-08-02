@@ -1233,24 +1233,42 @@ button {
     color: var(--hijau);
     margin: 0 0 28px;
 }
-.penutup-wrap {
-    margin-top: 40px;
-    display: flex;
-    justify-content: center;
+.penutup-wrap{
+    width:100%;
+    max-width:850px;
+    margin:50px auto 0;
+    padding:35px 30px;
+    background:#fff;
+    border:2px solid #133d23;
+    border-radius:28px;
+    text-align:center;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
     animation: slideUp 1s ease forwards;
-    opacity: 0;
-    transform: translateY(50px);
+    opacity:0;
+    transform:translateY(50px);
+}
+.penutup-wrap p{
+    max-width:650px;
+    margin:0 auto 28px;
+    line-height:1.7;
 }
 
 .penutup-card {
-    width: 90%;
-    max-width: 500px;
+    width: 80%;
+    max-width: 200px;
     background: #fff;
-    border: 2px solid #133d23;
+    border: 1px solid #133d23;
     border-radius: 15px;
     padding: 20px;
     text-align: center;
     box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+.penutup-content{
+    max-width:1100px;
+    margin:auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .card-ucapan {
@@ -1586,26 +1604,29 @@ body {
 
 .contact-box {
     display: flex;
+    flex-direction: row;
     justify-content: center;
-    align-items: center;
-    gap: 12px;
+    gap: 10px;
+    width: 100%;
+    margin-top: 25px;
     flex-wrap: wrap;
-    margin: 0 auto;
 }
 
-.contact-box a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 18px;
-    background: #133d23;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 14px;
-    font-size: 14px;
-    transition: transform 0.25s ease, background 0.25s ease;
-    white-space: nowrap;
+.contact-box a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+    
+    width:30%;
+    padding:4px 15px;
+
+    background:#14532d;
+    color:#fff;
+
+    border-radius:18px;
+    text-decoration:none;
+    box-sizing:border-box;
 }
 
 .contact-box a:hover {
