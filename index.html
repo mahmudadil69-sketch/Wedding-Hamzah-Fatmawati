@@ -7,18 +7,22 @@
     <title>Hamzah & Fatmawati Wedding</title>
     <meta name="description" content="Undangan pernikahan digital Hamzah & Fatmawati. Lihat detail acara, lokasi, dan kirim doa restu secara online.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://doa-undangan.firebaseapp.com/">
+    <meta property="og:url" content="https://wedding-hamzah-fatmawati.vercel.app/">
+
     <meta property="og:title" content="Hamzah & Fatmawati Wedding">
-    <meta property="og:description" content="Undangan pernikahan digital Hamzah & Fatmawati. Lihat detail acara, lokasi, doa, dan kirim ucapan restu.">
-    <meta property="og:image" content="https://doa-undangan.firebaseapp.com/img/Pengantin%20HF.png">
-    <meta property="og:image:secure_url" content="https://doa-undangan.firebaseapp.com/img/Pengantin%20HF.png">
-    <meta property="og:image:alt" content="Hamzah & Fatmawati Wedding">
+
+    <meta property="og:description"
+      content="Undangan pernikahan digital Hamzah & Fatmawati. Lihat detail acara, lokasi, doa, dan kirim ucapan restu.">
+
+    <meta property="og:image"
+      content="https://wedding-hamzah-fatmawati.vercel.app/img/cover.png">
+
+    <meta property="og:image:secure_url"
+      content="https://wedding-hamzah-fatmawati.vercel.app/img/cover.png">
+
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Hamzah & Fatmawati Wedding">
-    <meta name="twitter:description" content="Undangan pernikahan digital Hamzah & Fatmawati. Lihat detail acara, lokasi, doa, dan kirim ucapan restu.">
-    <meta name="twitter:image" content="/img/Pengantin HF.png">
+    <meta property="og:image:alt" content="Hamzah & Fatmawati Wedding">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -88,25 +92,6 @@
         }, 600); // harus sama dengan durasi animasi
     });
 
-    const updateShareMeta = () => {
-        const baseUrl = window.location.protocol === 'http:' || window.location.protocol === 'https:'
-            ? window.location.origin
-            : 'https://example.com';
-        const pageUrl = `${baseUrl}${window.location.pathname}`;
-        const imageUrl = `${baseUrl}/img/Pengantin%20HF.png`;
-
-        const ogUrl = document.querySelector('meta[property="og:url"]');
-        const ogImage = document.querySelector('meta[property="og:image"]');
-        const ogImageSecure = document.querySelector('meta[property="og:image:secure_url"]');
-        const twitterImage = document.querySelector('meta[name="twitter:image"]');
-
-        if (ogUrl) ogUrl.setAttribute('content', pageUrl);
-        if (ogImage) ogImage.setAttribute('content', imageUrl);
-        if (ogImageSecure) ogImageSecure.setAttribute('content', imageUrl);
-        if (twitterImage) twitterImage.setAttribute('content', imageUrl);
-    };
-
-    updateShareMeta();
 </script>
  
 
