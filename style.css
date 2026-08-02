@@ -54,7 +54,8 @@ button, input, textarea {
     margin: 0 0 12px;
 }
 .hero img {
-    width: min(320px, 76vw);
+    width: min(420px, 84vw);
+    max-width: 460px;
     height: auto;
     object-fit: contain;
     border-radius: 0;
@@ -84,7 +85,31 @@ button, input, textarea {
     color: white;
     transition: 0.3s ease;
     box-shadow: var(--shadow);
-}   
+}
+.hero-contact-box {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+.hero-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: var(--hijau);
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(7, 27, 16, 0.12);
+}
+.hero-contact-btn img {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+}
 .hero .deskripsi {
     max-width: 80%;
     margin: 0 auto;
@@ -187,11 +212,13 @@ button, input, textarea {
     max-width: 420px;
     padding: 0 8px;
 }
-
-.countdown-card {
-    display: block;
-    padding: 16px 14px;
-    background: transparent;
+.countdown-wrapper .countdown-card {
+    background: transparent !important;
+    border: 1px solid rgba(19,61,35,0.16);
+    box-shadow: none;
+}
+.countdown-wrapper .countdown-value {
+    background: linear-gradient(135deg, var(--hijau) 0%, #1f6e46 100%);
     border: 1px solid rgba(19,61,35,0.14);
     border-radius: 20px;
     box-shadow: 0 16px 36px rgba(19,61,35,0.08);
@@ -533,15 +560,6 @@ button {
     box-shadow: 0 18px 40px rgba(18, 35, 24, 0.08);
 }
 
-.card-ucapan {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 18px 20px;
-    margin: 18px auto;
-    max-width: 720px;
-    box-shadow: 0 16px 36px rgba(18, 35, 24, 0.08);
-    text-align: left;
-}
 
 .card-ucapan h4 {
     margin: 0 0 0.55rem;
@@ -1236,21 +1254,6 @@ button {
     flex-wrap: wrap;
 }
 
-.contact-box a {
-    text-decoration: none;
-    background: #133d23;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: 0.3s;
-}
-
-.contact-box a:hover {
-    background: #133d23;
-    transform: scale(1.05);
-}
-
 @keyframes slideUp {
     to {
         opacity: 1;
@@ -1263,6 +1266,20 @@ html,
 body {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+.ucapan-form,
+#list-ucapan {
+    position: relative;
+    z-index: 2;
+}
+
+.undangan .content::before,
+.mempelai .p-4::before,
+.ucapan::before,
+.penutup::before {
+    pointer-events: none;
+    z-index: 0;
 }
 
 .section,
