@@ -134,6 +134,11 @@ button, input, textarea {
     color: var(--hijau);
     font-family: "Lobster", cursive;
 }
+.countdown-timer {
+    background: transparent !important;
+    display: block;
+    margin: 0 auto;
+}
 .undangan img {
     width: min(320px, 76vw);
     height: auto;
