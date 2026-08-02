@@ -1618,7 +1618,7 @@ body {
     justify-content:center;
     gap:15px;
     
-    width:40%;
+    width:fit-content;
     padding:4px 15px;
 
     background:#14532d;
