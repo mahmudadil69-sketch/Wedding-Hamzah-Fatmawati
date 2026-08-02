@@ -323,13 +323,11 @@
             <a href="https://wa.me/6285389202468" target="_blank">
                 <img src="img/logo-wa.png" alt="">
                 <span>WhatsApp</span>
-                📱 WhatsApp
             </a>
 
             <a href="https://www.instagram.com/nasehat.dailyy/" target="_blank">
                 <img src="img/logo-ig.png" alt="">
                 <span>Instagram</span>
-                📷 Instagram
             </a>
         </div>
     </div>
@@ -347,7 +345,7 @@
 </button>
 
 <script>
-    const nasehatSlider = document.querySelector('.nasehat-slider');
+       const nasehatSlider = document.querySelector('.nasehat-slider');
     const nasehatSlides = document.querySelectorAll('.nasehat-slide');
     const nasehatDots = document.querySelectorAll('.nasehat-dot');
 
@@ -462,35 +460,176 @@ import {
     orderBy,
     doc,
     updateDoc,
-    deleteDoc
-
+    deleteDoc,
+    serverTimestamp,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // CONFIG KAMU
 const firebaseConfig = {
-  apiKey: "AIzaSyDTo9JTIJRI09DJXAY1iYlk0se9fWbAMQ8",
-  authDomain: "hamzah-fatamawati.firebaseapp.com",
-  projectId: "hamzah-fatamawati",
+  apiKey: "AIzaSyAJBxTHfgWHZMZQHIx0-_SvmyCY3e4jO_0",
+  authDomain: "doa-undangan.firebaseapp.com",
+  projectId: "doa-undangan",
+  storageBucket: "doa-undangan.firebasestorage.app",
+  messagingSenderId: "333422615261",
+  appId: "1:333422615261:web:8b41ffb9cd9c844b521934",
+  measurementId: "G-M12EGRNNTR"
 };
 
 // INIT
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 let pilihanKehadiran = "hadir";
+let authReady = false;
+const LOCAL_UCAPAN_KEY = "ucapan-lokal-v2";
+const LIKED_KEY = "ucapan-liked-v2";
+let remoteItems = [];
+let localItems = getLocalUcapan();
+let ADMIN = localStorage.getItem("admin_login") === "true";
+
+function escapeHtml(value = "") {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function getLocalUcapan() {
+    try {
+        return JSON.parse(localStorage.getItem(LOCAL_UCAPAN_KEY) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function saveLocalUcapan(items) {
+    localStorage.setItem(LOCAL_UCAPAN_KEY, JSON.stringify(items));
+}
+
+function getLikedIds() {
+    try {
+        return JSON.parse(localStorage.getItem(LIKED_KEY) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function saveLikedIds(ids) {
+    localStorage.setItem(LIKED_KEY, JSON.stringify(ids));
+}
+
+function getMergedItems() {
+    const merged = new Map();
+
+    [...localItems, ...remoteItems].forEach((item) => {
+        const id = item.id || `${item.nama}-${item.pesan}-${item.waktu}`;
+        if (!merged.has(id)) {
+            merged.set(id, item);
+        }
+    });
+
+    return Array.from(merged.values()).sort((a, b) => {
+        const aTime = a.waktu?.toDate ? a.waktu.toDate() : new Date(a.waktu || Date.now());
+        const bTime = b.waktu?.toDate ? b.waktu.toDate() : new Date(b.waktu || Date.now());
+        return bTime - aTime;
+    });
+}
+
+function formatDateTime(value) {
+    const dateObj = value?.toDate ? value.toDate() : new Date(value || Date.now());
+    return dateObj.toLocaleString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+function renderUcapanList(items) {
+    const list = document.getElementById("list-ucapan");
+    if (!list) return;
+
+    list.innerHTML = "";
+    const likedIds = getLikedIds();
+
+    items.forEach((item) => {
+        const id = item.id || `local-${Math.random().toString(36).slice(2)}`;
+        const hadir = item.kehadiran !== "tidak-hadir";
+        const hadirLabel = hadir ? "✓ Akan hadir" : "✕ Tidak hadir";
+        const hadirClass = hadir ? "hadir-status hadir-status-ya" : "hadir-status hadir-status-tidak";
+        const waktu = formatDateTime(item.waktu);
+        const sukaAktif = likedIds.includes(id) ? "like-btn liked" : "like-btn";
+
+        list.innerHTML += `
+            <div class="card-ucapan">
+                <div class="ucapan-header">
+                    <div>
+                        <h4>${escapeHtml(item.nama || "Anonim")}</h4>
+                        <div class="ucapan-badges">
+                            <span class="${hadirClass}">${hadirLabel}</span>
+                            <span class="ucapan-meta">${escapeHtml(waktu)}</span>
+                        </div>
+                    </div>
+                </div>
+                <p>${escapeHtml(item.pesan || "")}</p>
+                <div class="ucapan-actions">
+                    <button class="${sukaAktif}" onclick="likeUcapan('${id}', ${Number(item.like || 0)})">
+                        ❤️ <span>${Number(item.like || 0)}</span>
+                    </button>
+                    ${ADMIN ? `<button class="btn-delete" onclick="hapusUcapan('${id}')">🗑️</button>` : ""}
+                </div>
+            </div>
+        `;
+    });
+}
+
+function tambahUcapanLokal(item) {
+    localItems = [item, ...localItems];
+    saveLocalUcapan(localItems);
+    renderUcapanList(getMergedItems());
+}
+
+function updateItemLike(id) {
+    localItems = localItems.map((item) => item.id === id ? { ...item, like: (Number(item.like || 0) + 1) } : item);
+    remoteItems = remoteItems.map((item) => item.id === id ? { ...item, like: (Number(item.like || 0) + 1) } : item);
+    saveLocalUcapan(localItems);
+    renderUcapanList(getMergedItems());
+}
+
+async function ensureAuth() {
+    if (authReady) return;
+
+    try {
+        await signInAnonymously(auth);
+        authReady = true;
+    } catch (error) {
+        console.error("Gagal login anonim Firebase:", error);
+        throw error;
+    }
+}
+
 const hadirButtons = document.querySelectorAll(".hadir-btn");
 
 hadirButtons.forEach((button) => {
     button.addEventListener("click", () => {
         pilihanKehadiran = button.dataset.kehadiran;
-        hadirButtons.forEach((item) => item.classList.toggle("active", item === button));
+        hadirButtons.forEach((item) => {
+            const active = item === button;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
+        });
     });
 });
 
-// 🔒 LIMIT 1 UCAPAN / DEVICE
+// Tidak memblokir pengiriman berulang kali; komentar tetap bisa dikirim kembali.
 function sudahKirim() {
-    return localStorage.getItem("sudahKirim") === "true";
-
+    return false;
 }
 
 // 👀 LOADING
@@ -522,21 +661,52 @@ window.kirimUcapan = async function () {
     }
 
     try {
-        await addDoc(collection(db, "ucapan"), {
+        await ensureAuth();
+
+        const dataUcapan = {
+            nama: nama,
+            pesan: pesan,
+            kehadiran: pilihanKehadiran,
+            waktu: serverTimestamp(),
+            like: 0
+        };
+
+        const docRef = await addDoc(collection(db, "ucapan"), dataUcapan);
+        const itemLokal = {
+            id: docRef.id,
             nama: nama,
             pesan: pesan,
             kehadiran: pilihanKehadiran,
             waktu: new Date(),
             like: 0
-        });
-        localStorage.setItem("sudahKirim", "true");
+        };
+
+        tambahUcapanLokal(itemLokal);
+        document.getElementById("nama").value = "";
+        document.getElementById("pesan").value = "";
+        alert("Ucapan berhasil dikirim dan tampil untuk semua pengunjung.");
+    } catch (error) {
+        console.error("Gagal mengirim ucapan:", error);
+
+        const itemLokal = {
+            id: `local-${Date.now()}`,
+            nama: nama,
+            pesan: pesan,
+            kehadiran: pilihanKehadiran,
+            waktu: new Date(),
+            like: 0
+        };
+
+        tambahUcapanLokal(itemLokal);
+
+        if (error?.code === "permission-denied") {
+            alert("Komentar tersimpan di perangkat Anda karena aturan Firebase memblokir akses. Silakan perbarui aturan Firestore agar komentar bisa tampil untuk semua orang.");
+        } else {
+            alert("Komentar tersimpan di perangkat Anda karena koneksi Firebase sedang tidak tersedia.");
+        }
 
         document.getElementById("nama").value = "";
         document.getElementById("pesan").value = "";
-        alert("Ucapan berhasil dikirim");
-    } catch (error) {
-        console.error("Gagal mengirim ucapan:", error);
-        alert("Ucapan belum terkirim. Cek koneksi internet atau konfigurasi Firebase.");
         tombolKirim.disabled = false;
     } finally {
         setLoading(false);
@@ -545,17 +715,35 @@ window.kirimUcapan = async function () {
 };
 // ❤️ LIKE
 window.likeUcapan = async function (id, currentLike = 0) {
-    const ref = doc(db, "ucapan", id);
-    await updateDoc(ref, {
-        like: currentLike + 1
-    });
+    const likedIds = getLikedIds();
+    if (likedIds.includes(id)) {
+        alert("Anda sudah memberi suka pada komentar ini.");
+        return;
+    }
+
+    const newLikedIds = [...likedIds, id];
+    saveLikedIds(newLikedIds);
+    updateItemLike(id);
+
+    try {
+        const ref = doc(db, "ucapan", id);
+        await updateDoc(ref, {
+            like: increment(1)
+        });
+    } catch (error) {
+        console.error("Gagal menambah suka di Firebase:", error);
+    }
 };
 // 🗑️ DELETE (ADMIN)
 window.hapusUcapan = async function (id) {
     if (!ADMIN) return;
 
     if (confirm("Hapus ucapan ini?")) {
-        await deleteDoc(doc(db, "ucapan", id));
+        try {
+            await deleteDoc(doc(db, "ucapan", id));
+        } catch (error) {
+            console.error("Gagal menghapus ucapan:", error);
+        }
     }
 };
 let ADMIN = false;
@@ -566,7 +754,7 @@ if (localStorage.getItem("admin_login") === "true") {
 
 window.loginAdmin = function () {
     const pin = prompt("PIN admin:");
-    
+
     if (pin === "12345") {
         localStorage.setItem("admin_login", "true");
         ADMIN = true;
@@ -581,40 +769,28 @@ window.logoutAdmin = function () {
     ADMIN = false;
     alert("Admin logout");
 };
-// TAMPILKAN REALTIME
+
 const q = query(collection(db, "ucapan"), orderBy("waktu", "desc"));
 
 onSnapshot(q, (snapshot) => {
-    const list = document.getElementById("list-ucapan");
-    const preview = document.getElementById("preview-ucapan");
-    list.innerHTML = "";
+    remoteItems = [];
 
     snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const id = docSnap.id;
-        const hadir = data.kehadiran !== "tidak-hadir";
-        const hadirLabel = hadir ? "✓ Akan hadir" : "✕ Tidak hadir";
-        const hadirClass = hadir ? "hadir-status hadir-status-ya" : "hadir-status hadir-status-tidak";
-
-         // tampilkan semua ucapan
-        list.innerHTML += `
-            <div class="card-ucapan">
-                <h4>${data.nama}
-                    <span class="${hadirClass}">${hadirLabel}</span>
-                    <span class="ucapan-meta">${new Date(data.waktu.toMillis ? data.waktu.toMillis() : data.waktu).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                </h4>
-                <p>${data.pesan}</p>
-                <div class="ucapan-actions">
-                    <button onclick="likeUcapan('${id}', ${data.like || 0})">
-                        ❤️ ${data.like || 0}
-                    </button>
-
-                    ${ADMIN ? `<button onclick="hapusUcapan('${id}')">🗑️</button>` : ""}
-                </div>
-            </div>
-        `;
+        remoteItems.push({
+            ...data,
+            id: docSnap.id,
+            waktu: data.waktu
+        });
     });
+
+    renderUcapanList(getMergedItems());
+}, (error) => {
+    console.error("Gagal memuat ucapan dari Firebase:", error);
+    renderUcapanList(getMergedItems());
 });
+
+renderUcapanList(getMergedItems());
 
 window.salinRekening = function () {
     const text = document.getElementById("no-rek").innerText;
@@ -623,6 +799,7 @@ window.salinRekening = function () {
         alert("Rekening berhasil disalin ✅");
     });
 };
+
 const penutup = document.querySelector(".penutup-wrap");
 
 const observer = new IntersectionObserver((entries) => {
@@ -638,7 +815,6 @@ const musik = document.getElementById("musik");
 const btn = document.getElementById("musicBtn");
 
 let isPlaying = false;
-
 let audioStarted = false;
 
 function setMusicButton() {
