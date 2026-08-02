@@ -24,7 +24,7 @@
     <p class="tanggal">Senin, 10 Agustus 2026</p>
 
 
-    <!-- COUNTDOWN -->
+<!-- COUNTDOWN -->
 <script src="https://cdn.logwork.com/widget/countdown.js"></script>
 <div class="countdown-wrapper">
     <a href="https://logwork.com/countdown-a3sk"
@@ -267,14 +267,15 @@
 
     <div class="ucapan-form scroll-animate">
         <div class="kehadiran-box" aria-label="Konfirmasi kehadiran">
-            <button class="hadir-btn hadir-ya active" type="button" data-kehadiran="hadir">Akan Hadir</button>
-            <button class="hadir-btn hadir-tidak" type="button" data-kehadiran="tidak-hadir">Tidak Hadir</button>
+            <button class="hadir-btn hadir-ya active" type="button" data-kehadiran="hadir" aria-pressed="true">Akan Hadir</button>
+            <button class="hadir-btn hadir-tidak" type="button" data-kehadiran="tidak-hadir" aria-pressed="false">Tidak Hadir</button>
         </div>
         <input type="text" id="nama" placeholder="Nama Anda">
         <textarea id="pesan" placeholder="Tulis doa terbaik..."></textarea>
         <button id="kirim-ucapan" type="button" onclick="kirimUcapan()">Kirim</button>
     </div>
     <div id="loading"></div>
+    <p id="comment-status" class="comment-status" role="status" aria-live="polite">Menghubungkan ucapan...</p>
 
     <div id="list-ucapan"></div>
 
@@ -319,7 +320,6 @@
         </p>
 
         <div class="contact-box">
-        <div class="contact-item">
             <a href="https://wa.me/6285389202468" target="_blank">
                 <img src="img/logo-wa.png" alt="">
                 <span>WhatsApp</span>
@@ -468,13 +468,13 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
 
 // CONFIG KAMU
 const firebaseConfig = {
-  apiKey: "AIzaSyAJBxTHfgWHZMZQHIx0-_SvmyCY3e4jO_0",
-  authDomain: "doa-undangan.firebaseapp.com",
-  projectId: "doa-undangan",
-  storageBucket: "doa-undangan.firebasestorage.app",
-  messagingSenderId: "333422615261",
-  appId: "1:333422615261:web:8b41ffb9cd9c844b521934",
-  measurementId: "G-M12EGRNNTR"
+  apiKey: "AIzaSyBOC0L635LPGn7JBRJkyMXn-2oJm8R8ok4",
+  authDomain: "undagan-jusman.firebaseapp.com",
+  projectId: "undagan-jusman",
+  storageBucket: "undagan-jusman.firebasestorage.app",
+  messagingSenderId: "689199140451",
+  appId: "1:689199140451:web:257777f963391cf60a3256",
+  measurementId: "G-3KQKBJJM70"
 };
 
 // INIT
@@ -637,6 +637,13 @@ function setLoading(status) {
     document.getElementById("loading").style.display = status ? "block" : "none";
 }
 
+function setCommentStatus(message, isError = false) {
+    const status = document.getElementById("comment-status");
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle("is-error", isError);
+}
+
 // KIRIM UCAPAN
 window.kirimUcapan = async function () {
     if (sudahKirim()) {
@@ -684,7 +691,7 @@ window.kirimUcapan = async function () {
         tambahUcapanLokal(itemLokal);
         document.getElementById("nama").value = "";
         document.getElementById("pesan").value = "";
-        alert("Ucapan berhasil dikirim dan tampil untuk semua pengunjung.");
+        setCommentStatus("Ucapan berhasil dikirim. Menunggu sinkronisasi real-time...");
     } catch (error) {
         console.error("Gagal mengirim ucapan:", error);
 
@@ -700,9 +707,11 @@ window.kirimUcapan = async function () {
         tambahUcapanLokal(itemLokal);
 
         if (error?.code === "permission-denied") {
-            alert("Komentar tersimpan di perangkat Anda karena aturan Firebase memblokir akses. Silakan perbarui aturan Firestore agar komentar bisa tampil untuk semua orang.");
+            setCommentStatus("Ucapan belum terkirim: akses Firestore ditolak.", true);
+            alert("Firebase menolak akses. Aktifkan Anonymous Authentication dan perbarui aturan Firestore agar ucapan tampil untuk semua pengunjung.");
         } else {
-            alert("Komentar tersimpan di perangkat Anda karena koneksi Firebase sedang tidak tersedia.");
+            setCommentStatus("Ucapan belum terkirim: koneksi Firebase tidak tersedia.", true);
+            alert("Ucapan belum dapat dikirim karena koneksi Firebase tidak tersedia.");
         }
 
         document.getElementById("nama").value = "";
@@ -710,6 +719,7 @@ window.kirimUcapan = async function () {
         tombolKirim.disabled = false;
     } finally {
         setLoading(false);
+        tombolKirim.disabled = false;
         tombolKirim.textContent = "Kirim";
     }
 };
@@ -770,25 +780,30 @@ window.logoutAdmin = function () {
     alert("Admin logout");
 };
 
-const q = query(collection(db, "ucapan"), orderBy("waktu", "desc"));
+async function startRealtimeComments() {
+    try {
+        await ensureAuth();
+        const commentsQuery = query(collection(db, "ucapan"), orderBy("waktu", "desc"));
 
-onSnapshot(q, (snapshot) => {
-    remoteItems = [];
-
-    snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        remoteItems.push({
-            ...data,
-            id: docSnap.id,
-            waktu: data.waktu
+        onSnapshot(commentsQuery, (snapshot) => {
+            remoteItems = snapshot.docs.map((docSnap) => ({
+                ...docSnap.data(),
+                id: docSnap.id
+            }));
+            renderUcapanList(getMergedItems());
+            setCommentStatus(`Ucapan tersinkron real-time (${remoteItems.length} ucapan).`);
+        }, (error) => {
+            console.error("Gagal memuat ucapan dari Firebase:", error);
+            setCommentStatus("Ucapan belum bisa dimuat dari Firebase.", true);
+            renderUcapanList(getMergedItems());
         });
-    });
+    } catch (error) {
+        console.error("Gagal menghubungkan Firebase:", error);
+        setCommentStatus("Tidak dapat menghubungkan ke Firebase.", true);
+    }
+}
 
-    renderUcapanList(getMergedItems());
-}, (error) => {
-    console.error("Gagal memuat ucapan dari Firebase:", error);
-    renderUcapanList(getMergedItems());
-});
+startRealtimeComments();
 
 renderUcapanList(getMergedItems());
 
