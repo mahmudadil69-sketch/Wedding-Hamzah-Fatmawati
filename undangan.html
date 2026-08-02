@@ -104,7 +104,7 @@
         <div class="p-4 text-center">
             <img src="img/Pengantin Hm.png" class="pengantin mb-2 scroll-animate">
           <h3 class = "scroll-animate">Hamzah, S,Si. <span class="nickname">(Anca)</h3>
-          <p class="orang-tua scroll-animate">Putra Bungsu dari<br>Bapak Pahara Dg. Emba &<br>Ibu Bungalia</p>
+          <p class="orang-tua scroll-animate">Putra keempat dari<br>Bapak Pahara Dg. Emba &<br>Ibu Bungalia</p>
         </div>
       </div>
 
@@ -112,7 +112,7 @@
         <div class=" p-4 text-center">
             <img src="img/Pengantin Fa.png" class="pengantin mb-2 scroll-animate">
           <h3 class="scroll-animate">Fatmawati <span class="nickname">(Fatma)</h3>
-          <p class="orang-tua scroll-animate">Putri Pertama dari<br>Bapak &<br>Ibu  Salmah</p>
+          <p class="orang-tua scroll-animate">Putri keempat dari<br>Bapak &<br>Ibu  Salmah</p>
         </div>
       </div>
     </div>
@@ -296,13 +296,13 @@
 </section>
 
 <section id="penutup" class="section penutup">
-    <div class="penutup-pengantar">
+    <div class="penutup-pengantar scroll-animate">
         <p>
             Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
         </p>
     </div>
 
-    <img src="img/Pengantin HF.png" alt="Gambar mempelai" class="pengantin mb-3">
+    <img src="img/Pengantin HF.png" alt="Gambar mempelai" class="pengantin mb-3 scroll-animate">
     <h1>Hamzah & Fatmawati</h1>
     <h2>Keluarga Besar Mempelai Peria</h2>
     <h3>Bapak Pahara Dg. Emba & <br> Ibu Bungalia</h3>
@@ -310,8 +310,7 @@
     <h3>Bapak Syainuddin & <br> Ibu Salmah
 </h3>
 
-    <div class="penutup-wrap">
-    <div class="penutup-card">
+    <div class="penutup-wrap scroll-animate">
         <h3>✨ Terima Kasih</h3>
 
         <p>
@@ -320,6 +319,7 @@
         </p>
 
         <div class="contact-box">
+        <div class="contact-item">
             <a href="https://wa.me/6285389202468" target="_blank">
                 <img src="img/logo-wa.png" alt="">
                 <span>WhatsApp</span>
@@ -345,7 +345,7 @@
 </button>
 
 <script>
-       const nasehatSlider = document.querySelector('.nasehat-slider');
+    const nasehatSlider = document.querySelector('.nasehat-slider');
     const nasehatSlides = document.querySelectorAll('.nasehat-slide');
     const nasehatDots = document.querySelectorAll('.nasehat-dot');
 
@@ -488,7 +488,7 @@ const LOCAL_UCAPAN_KEY = "ucapan-lokal-v2";
 const LIKED_KEY = "ucapan-liked-v2";
 let remoteItems = [];
 let localItems = getLocalUcapan();
-let ADMIN = localStorage.getItem("admin_login") === "true";
+let admin = localStorage.getItem("admin_login") === "true";
 
 function escapeHtml(value = "") {
     return String(value)
